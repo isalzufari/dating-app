@@ -1,0 +1,112 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const Place = () => {
+  return (
+    <>
+      <div className="card mb-3 shadow-sm">
+        <div className="card-body">
+          <div class="row g-3">
+            <div class="col-sm">
+              <label class="visually-hidden" for="autoSizingSelect">Preference</label>
+              <select class="form-select" id="autoSizingSelect">
+                <option selected>Kota</option>
+                <option value="1">Jakarta Selatan</option>
+                <option value="2">Depok</option>
+              </select>
+            </div>
+
+            <div class="col-sm">
+              <label class="visually-hidden" for="autoSizingSelect">Preference</label>
+              <select class="form-select" id="autoSizingSelect">
+                <option selected>Area</option>
+                <option value="1">SCBD</option>
+                <option value="1">Tebet</option>
+              </select>
+            </div>
+
+            <div class="col-sm">
+              <label class="visually-hidden" for="autoSizingSelect">Preference</label>
+              <select class="form-select" id="autoSizingSelect">
+                <option selected>Choose...</option>
+                <option value="1">Kulineran</option>
+                <option value="2">Mall</option>
+                <option value="3">Cafe</option>
+                <option value="3">Taman</option>
+                <option value="3">Perpus</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* <h4 className='mb-3'>Tempat Populer</h4> */}
+      <div className="row">
+
+        <div className='col-12 col-sm-6 col-md-4 col-lg-3'>
+          <Link to='/place/dekhad-gandaria' className='text-decoration-none text-dark'>
+            <div className="card position-relative">
+              <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
+                Trendsetter
+                <span class="visually-hidden">unread messages</span>
+              </span>
+              <img src="https://lh3.googleusercontent.com/p/AF1QipPIZ_dkQQt-PalTvzgcEVY0xr-yT7V4B6KMBX7x=s680-w680-h510" class="card-img" alt="..." style={{ objectFit: 'cover', height: 180 }} />
+              <div className="card-body">
+                <small className='float-end'>
+                  Kby Baru{' '}
+                  <i className="bi bi-geo-alt"></i>
+                </small>
+                <h5 className="card-title">Dekhad Gandaria</h5>
+                <p className="card-text text-truncate">As a hub for people and communities, gathering an array of lifestyle brands and noticeable presence through its dynamic communal spot that anchors on an interactive concept.</p>
+                <p className='float-end'>
+                  <small>dari </small>
+                  <span className='badge text-bg-danger'>IDR 25.000 - 100.000</span>
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        <div className='col-12 col-sm-6 col-md-4 col-lg-3'>
+          <Link to='/place/dekhad-gandaria' className='text-decoration-none text-dark'>
+            <div className="card position-relative">
+              <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
+                Hidden Gem
+                <span class="visually-hidden">unread messages</span>
+              </span>
+              <img src="https://asset.kompas.com/crops/3sSP6Iz49CG1GWMdfSiqwtOcAsA=/0x15:656x343/780x390/data/photo/2022/11/16/6374712c933fa.png" class="card-img" alt="..." style={{ objectFit: 'cover', height: 180 }} />
+              <div className="card-body">
+                <small className='float-end'>
+                  Fatmawati{' '}
+                  <i className="bi bi-geo-alt"></i>
+                </small>
+                <h5 className="card-title">Sore Izakaya</h5>
+                <p className="card-text text-truncate">Japanese izakaya style restaurant.</p>
+                <p className='float-end'>
+                  <small>dari </small>
+                  <span className='badge text-bg-danger'>IDR 35.000 - 150.000</span>
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+      </div>
+
+      {/* <h4 className='my-3'>Tempat Populer di Kota</h4>
+      <div className="row">
+        <div className="col-12 col-sm-6 col-md-3">
+          <div className="card text-bg-dark">
+            <img src="https://cdn-brilio-net.akamaized.net/community/thumbnail/2022/02/08/image_1644323885_6202642d49e8f.jpg" class="card-img" alt="..." />
+            <div className="card-img-overlay">
+              <h5 className="card-title">Jakarta Selatan</h5>
+              <p className="card-text">Jakarta Selatan adalah salah satu dari lima Kota Administrasi di DKI Jakarta. Di sebelah Utara, Jakarta Selatan berbatasan dengan Jakarta Barat dan Jakarta Pusat</p>
+            </div>
+          </div>
+        </div>
+      </div> */}
+    </>
+  )
+}
+
+export default Place;

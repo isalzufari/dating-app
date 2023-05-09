@@ -1,0 +1,10 @@
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+p, a, h1, h2, h3, h4, h5, h6, textarea, label, small, .btn, .form-control, .form-label {
+  font-family: 'Poppins', sans-serif !important;
+  color: #525552;
+}
