@@ -1,11 +1,30 @@
+require('dotenv').config();
+
 const Hapi = require('@hapi/hapi');
-const routes = require('./api/users');
+const ClientError = require('./exceptions/ClientError');
+
 const users = require('./api/users');
+const UsersService = require('./services/mysql/UsersService');
+
+const authentications = require('./api/authentications');
+const AuthenticationsService = require('./services/mysql/AuthenticationsService');
+const TokenManager = require('./utils/TokenManager');
+
+const spot = require('./api/spot');
+const SpotService = require('./services/mysql/SpotService');
+
+const review = require('./api/reviews')
+const ReviewService = require('./services/mysql/ReviewService');
 
 const init = async () => {
+  const usersService = new UsersService();
+  const authenticationsService = new AuthenticationsService();
+  const spotService = new SpotService();
+  const reviewService = new ReviewService();
+
   const server = Hapi.server({
-    port: 9001,
-    host: 'localhost',
+    port: process.env.PORT,
+    host: process.env.HOST,
     routes: {
       cors: {
         origin: ['*'],
@@ -13,13 +32,63 @@ const init = async () => {
     },
   });
 
-  await server.register(
+  server.ext('onPreResponse', (request, h) => {
+    const { response } = request;
+
+    // console.log(response);
+
+    if (response instanceof ClientError) {
+      const newResponse = h.response({
+        status: 'fail',
+        message: response.message,
+      });
+      newResponse.code(response.statusCode);
+      return newResponse;
+    }
+
+    return response.continue || response;
+  });
+
+  await server.register([
     {
       plugin: users,
+      options: {
+        service: usersService,
+      },
       routes: {
         prefix: '/users'
       },
+    },
+    {
+      plugin: authentications,
+      options: {
+        authenticationsService,
+        usersService,
+        tokenManager: TokenManager,
+      },
+      routes: {
+        prefix: '/authentications'
+      }
+    },
+    {
+      plugin: spot,
+      options: {
+        service: spotService,
+      },
+      routes: {
+        prefix: '/spot'
+      },
+    },
+    {
+      plugin: review,
+      options: {
+        service: reviewService,
+      },
+      routes: {
+        prefix: '/reviews'
+      },
     }
+  ]
   );
 
   await server.start();
