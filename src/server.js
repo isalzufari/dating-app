@@ -1,6 +1,11 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
+
+// Static Files
+const Path = require('path');
+const Inert = require('@hapi/inert');
+
 const ClientError = require('./exceptions/ClientError');
 
 const users = require('./api/users');
@@ -16,11 +21,19 @@ const SpotService = require('./services/mysql/SpotService');
 const review = require('./api/reviews')
 const ReviewService = require('./services/mysql/ReviewService');
 
+const location = require('./api/locations');
+const LocationService = require('./services/mysql/LocationService');
+
+const facility = require('./api/facility');
+const FacilityService = require('./services/mysql/FacilityService');
+
 const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const spotService = new SpotService();
   const reviewService = new ReviewService();
+  const locationService = new LocationService();
+  const facilityService = new FacilityService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -30,6 +43,18 @@ const init = async () => {
         origin: ['*'],
       },
     },
+  });
+
+  await server.register(Inert);
+
+  server.route({
+    method: 'GET',
+    path: '/images/{param*}',
+    handler: {
+      directory: {
+        path: Path.resolve('./public/images'),
+      }
+    }
   });
 
   server.ext('onPreResponse', (request, h) => {
@@ -73,7 +98,9 @@ const init = async () => {
     {
       plugin: spot,
       options: {
-        service: spotService,
+        spotService,
+        reviewService,
+        facilityService
       },
       routes: {
         prefix: '/spot'
@@ -87,6 +114,24 @@ const init = async () => {
       routes: {
         prefix: '/reviews'
       },
+    },
+    {
+      plugin: location,
+      options: {
+        service: locationService,
+      },
+      routes: {
+        prefix: '/location'
+      }
+    },
+    {
+      plugin: facility,
+      options: {
+        service: facilityService,
+      },
+      routes: {
+        prefix: '/facility'
+      }
     }
   ]
   );

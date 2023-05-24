@@ -26,10 +26,10 @@ class ReviewService {
     })
   }
 
-  async verifyNewReview(id_user) {
+  async verifyNewReview(id_user, id_spot) {
     const query = {
-      text: 'SELECT id_user FROM `reviews` WHERE `id_user` = ?',
-      values: [id_user],
+      text: 'SELECT id_user FROM `reviews` WHERE `id_user` = ? AND `id_spot` = ?',
+      values: [id_user, id_spot],
     };
 
     const [result, fields] = await this._pool.query(
@@ -45,7 +45,7 @@ class ReviewService {
   }
 
   async addReview({ id_user, id_spot, image, rating, review }) {
-    await this.verifyNewReview(id_user);
+    await this.verifyNewReview(id_user, id_spot);
     const filename = await this.base64ToImg(image);
     const locationImg = `images/${filename}`;
 
@@ -64,6 +64,20 @@ class ReviewService {
     }
 
     return result.insertId;
+  }
+
+  async getAllReviewByIdSpot({ id }) {
+    const query = {
+      text: 'SELECT * FROM reviews WHERE `id_spot` = ?',
+      values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result;
   }
 }
 

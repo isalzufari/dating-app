@@ -78,6 +78,32 @@ class SpotService {
 
     return id_spot;
   }
+
+  async getSpotBySlug({ slug }) {
+    const query = {
+      text: 'SELECT * FROM `spot` WHERE `slug` = ?',
+      values: [slug],
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result[0];
+  }
+
+  async getSpots() {
+    const query = {
+      text: 'SELECT * FROM `spot`',
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+    );
+
+    return result;
+  }
 }
 
 module.exports = SpotService;
