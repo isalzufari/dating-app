@@ -4,7 +4,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-p, a, h1, h2, h3, h4, h5, h6, textarea, label, small, .btn, .form-control, .form-label {
+p, a, h1, h2, h3, h4, h5, h6, b, ul, li, textarea, label, small, .form-control, .form-label {
   font-family: 'Poppins', sans-serif !important;
   color: #525552;
+}
+
+.btn {
+  font-family: 'Poppins', sans-serif !important;
 }

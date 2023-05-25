@@ -1,7 +1,62 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import api from '../utils/api';
 
 const Place = () => {
+  const [regions, setRegions] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [spots, setSpots] = useState([]);
+  let [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const idRegion = searchParams.get('regions');
+    onArea(idRegion);
+    onSpotsByRegion(idRegion);
+    onSpots();
+    onRegion();
+  }, []);
+
+  const onRegion = async () => {
+    const data = await api.getRegion();
+    setRegions(data);
+  }
+
+  const onArea = async (id) => {
+    if (!Number(id)) {
+      onSpots();
+      return;
+    };
+    const spots = await api.getSpotsByIdRegion({ id })
+    setSpots(spots);
+    const data = await api.getAreaByIdRegion({ id });
+    setAreas(data);
+  }
+
+  const onSpots = async () => {
+    const data = await api.getSpots();
+    setSpots(data);
+  }
+
+  const onSpotsByArea = async (id) => {
+    if (!Number(id)) {
+      onSpots();
+      return;
+    };
+    const data = await api.getSpotsByIdArea({ id });
+    setSpots(data);
+    console.log(data);
+  }
+
+  const onSpotsByRegion = async (id) => {
+    if (!Number(id)) {
+      onSpots();
+      return;
+    };
+    const data = await api.getSpotsByIdRegion({ id });
+    setSpots(data);
+    console.log(data);
+  }
+
   return (
     <>
       <div className="card mb-3 shadow-sm">
@@ -9,26 +64,28 @@ const Place = () => {
           <div class="row g-3">
             <div class="col-sm">
               <label class="visually-hidden" for="autoSizingSelect">Preference</label>
-              <select class="form-select" id="autoSizingSelect">
-                <option selected>Kota</option>
-                <option value="1">Jakarta Selatan</option>
-                <option value="2">Depok</option>
+              <select onChange={((e) => onArea(e.target.value))} class="form-select" id="autoSizingSelect">
+                <option selected>Daerah</option>
+                {regions.map((region, key) => (
+                  <option key={key} value={region.id_region}>{region.name}</option>
+                ))}
               </select>
             </div>
 
             <div class="col-sm">
               <label class="visually-hidden" for="autoSizingSelect">Preference</label>
-              <select class="form-select" id="autoSizingSelect">
+              <select onChange={((e) => onSpotsByArea(e.target.value))} class="form-select" id="autoSizingSelect">
                 <option selected>Area</option>
-                <option value="1">SCBD</option>
-                <option value="1">Tebet</option>
+                {areas.map((area, key) => (
+                  <option key={key} value={area.id_location}>{area.area}</option>
+                ))}
               </select>
             </div>
 
             <div class="col-sm">
               <label class="visually-hidden" for="autoSizingSelect">Preference</label>
               <select class="form-select" id="autoSizingSelect">
-                <option selected>Choose...</option>
+                <option selected>Pilih</option>
                 <option value="1">Kulineran</option>
                 <option value="2">Mall</option>
                 <option value="3">Cafe</option>
@@ -38,12 +95,43 @@ const Place = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
 
       {/* <h4 className='mb-3'>Tempat Populer</h4> */}
-      <div className="row">
+      <div className="row" >
 
-        <div className='col-12 col-sm-6 col-md-4 col-lg-3'>
+        {!spots?.length > 0 ?
+          <>
+            <p className='text-center h5 mt-5'>Spot belum ada</p>
+            <p className='text-center'> mau tambah spot? <Link to="/app/login">login</Link></p>
+          </>
+          : spots.map((spot, key) => (
+            <div key={key} className='col-12 col-sm-6 col-md-4 col-lg-3 mb-3'>
+              <Link to={`/place/${spot.slug}`} className='text-decoration-none text-dark'>
+                <div className="card position-relative">
+                  <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
+                    Trendsetter
+                    <span class="visually-hidden">unread messages</span>
+                  </span>
+                  <img src={spot.image} class="card-img" alt={spot.name} style={{ objectFit: 'cover', height: 180 }} />
+                  <div className="card-body">
+                    <small className='float-end'>
+                      {spot.area}{' '}
+                      <i className="bi bi-geo-alt"></i>
+                    </small>
+                    <h5 className="h6 card-title text-truncate"><b>{spot.name}</b></h5>
+                    <p className="card-text text-truncate">{spot.desc}</p>
+                    <p className='float-end'>
+                      <small>dari </small>
+                      <span className='badge text-bg-danger'>IDR {spot.price}</span>
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
+
+        {/* <div className='col-12 col-sm-6 col-md-4 col-lg-3'>
           <Link to='/place/dekhad-gandaria' className='text-decoration-none text-dark'>
             <div className="card position-relative">
               <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
@@ -89,9 +177,9 @@ const Place = () => {
               </div>
             </div>
           </Link>
-        </div>
+        </div> */}
 
-      </div>
+      </div >
 
       {/* <h4 className='my-3'>Tempat Populer di Kota</h4>
       <div className="row">
