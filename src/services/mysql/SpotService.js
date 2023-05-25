@@ -1,5 +1,6 @@
 const InvariantError = require('../../exceptions/InvariantError');
 const pool = require('./conn');
+const { base64ToImg } = require('../../utils');
 
 class SpotService {
   constructor() {
@@ -50,13 +51,17 @@ class SpotService {
     );
   }
 
-  async addSpot({ name, desc, price, facility, id_location }) {
+  async addSpot({ id_user, name, image, desc, price, facility, id_location }) {
     await this.verifyNewName(name);
+    const filename = await base64ToImg(image);
+    const locationImg = `images/${filename}`;
     const slug = await this.convertToSlug(name);
 
+    console.log(id_location);
+
     const query = {
-      text: 'INSERT INTO spot (name, slug, `desc`, price, id_location) VALUES(?, ?, ?, ?, ?)',
-      values: [name, slug, desc, price, id_location]
+      text: 'INSERT INTO spot (name, slug, `image`, `desc`, price, id_location) VALUES(?, ?, ?, ?, ?, ?)',
+      values: [name, slug, locationImg, desc, price, id_location]
     };
 
     const [result, fields] = await this._pool.query(
@@ -74,7 +79,7 @@ class SpotService {
       this.addFacility(id_spot, id_facility)
     });
     // Add Users To Have Spot
-    this.addListSpot(36, id_spot)
+    this.addListSpot(id_user, id_spot)
 
     return id_spot;
   }
@@ -95,13 +100,49 @@ class SpotService {
 
   async getSpots() {
     const query = {
-      text: 'SELECT * FROM `spot`',
+      text: `SELECT spot.name, spot.slug, spot.image, spot.desc, spot.price, area.name as area
+      FROM spot 
+      INNER JOIN locations ON spot.id_location = locations.id
+      INNER JOIN area ON locations.id_area = area.id`,
     }
 
     const [result, fields] = await this._pool.query(
       query.text,
     );
 
+    return result;
+  }
+
+  async updateRatingByIdSpot({ avgRating, id }) {
+    const query = {
+      text: 'UPDATE `spot` SET rating = ? WHERE id = ?',
+      values: [avgRating, id],
+    };
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result;
+  }
+
+  async getSpotByRegion({ id }) {
+    const query = {
+      text: `SELECT spot.name, spot.slug, spot.image, spot.desc, spot.price, area.name FROM spot 
+      INNER JOIN locations ON spot.id_location = locations.id 
+      INNER JOIN region ON locations.id_region = region.id 
+      INNER JOIN area ON locations.id_area = area.id 
+      WHERE region.id = ?`,
+      values: [id],
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    console.log(result);
     return result;
   }
 }

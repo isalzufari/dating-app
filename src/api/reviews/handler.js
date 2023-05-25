@@ -1,15 +1,18 @@
 class ReviewHandler {
-  constructor(service) {
-    this._service = service;
+  constructor(reviewService, spotService) {
+    this._reviewService = reviewService;
+    this._spotService = spotService;
 
     this.postReviewHandler = this.postReviewHandler.bind(this);
   }
 
   async postReviewHandler(request, h) {
-    const id_user = 36;
+    const { id: id_user } = request.auth.credentials;
     const { id_spot, image, rating, review } = request.payload;
 
-    const reviewId = await this._service.addReview({ id_user, id_spot, image, rating, review })
+    const reviewId = await this._reviewService.addReview({ id_user, id_spot, image, rating, review })
+    const avgRating = await this._reviewService.getAvgReviewsFromSpot({ id: id_spot });
+    await this._spotService.updateRatingByIdSpot({ avgRating, id: id_spot });
 
     const response = h.response({
       status: 'success',

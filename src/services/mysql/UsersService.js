@@ -8,14 +8,40 @@ class UsersService {
     this._pool = pool.promise();
   }
 
-  async addUser({ name, email, password, status }) {
+  async getUsers() {
+    const query = {
+      text: 'SELECT * FROM `users`'
+    };
+
+    const [result, fields] = await this._pool.query(
+      query.text
+    );
+
+    return result;
+  }
+
+  async getUserById(id) {
+    const query = {
+      text: 'SELECT name, email, status FROM `users` WHERE `id` = ?',
+      values: [id],
+    };
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result[0];
+  }
+
+  async addUser({ name, email, password }) {
     await this.verifyNewEmail(email);
 
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log(hashedPassword);
     const query = {
       text: 'INSERT INTO users (name, email, password, status) VALUES(?, ?, ?, ?)',
-      values: [name, email, hashedPassword, status],
+      values: [name, email, hashedPassword, 0],
     };
 
     const [result, fields] = await this._pool.query(
@@ -44,20 +70,6 @@ class UsersService {
     if (result.length > 0) {
       throw new InvariantError('User gagal ditambahkan: verifyNewEmail');
     }
-  }
-
-  async getUserById(id) {
-    const query = {
-      text: 'SELECT * FROM `users` WHERE `id` = ?',
-      values: [id],
-    };
-
-    const [result, fields] = await this._pool.query(
-      query.text,
-      query.values,
-    );
-
-    return result;
   }
 
   async verifyUserCredential(email, password) {

@@ -51,12 +51,45 @@ class LocationService {
 
   async getSpotByIdLocation({ id }) {
     const query = {
-      text: `SELECT spot.name, spot.slug, spot.desc, spot.price, area.name as area
+      text: `SELECT spot.name, spot.image, spot.slug, spot.desc, spot.price, area.name as area
       FROM spot 
       INNER JOIN locations ON spot.id_location = locations.id
       INNER JOIN area ON locations.id_area = area.id 
       WHERE locations.id = ?`,
       values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+    return result;
+  }
+
+  async getLocationByIdLocation({ id }) {
+    const query = {
+      text: `SELECT region.id as region_id, region.name as region, area.name as area FROM locations 
+      INNER JOIN region ON locations.id_region = region.id
+      INNER JOIN area on locations.id_area = area.id
+      WHERE locations.id = ?`,
+      values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result[0];
+  }
+
+  async getSpotAroundLocation({ id_location, id_spot }) {
+    const query = {
+      text: `SELECT spot.name, spot.image, spot.slug, spot.desc, spot.price, spot.rating
+      FROM spot 
+      INNER JOIN locations ON spot.id_location = locations.id
+      WHERE locations.id = ? AND NOT spot.id = ? ORDER BY spot.rating DESC`,
+      values: [id_location, id_spot]
     }
 
     const [result, fields] = await this._pool.query(

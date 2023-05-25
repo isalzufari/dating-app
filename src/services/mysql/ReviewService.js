@@ -1,29 +1,10 @@
 const InvariantError = require('../../exceptions/InvariantError');
 const pool = require('./conn');
-const isBase64 = require('is-base64');
-const base64Img = require('base64-img');
+const { base64ToImg } = require('../../utils');
 
 class ReviewService {
   constructor() {
     this._pool = pool.promise();
-  }
-
-  async base64ToImg(imageBase64) {
-    return new Promise((resolve, reject) => {
-      if (!isBase64(imageBase64, { mimeRequired: true })) {
-        throw new InvariantError('Review gagal ditambahkan: Invalid base64')
-      }
-
-      base64Img.img(imageBase64, './public/images', Date.now(), async (err, filepath) => {
-        if (err) {
-          reject(err);
-          throw new InvariantError('Review gagal ditambahkan: base64Img')
-        }
-
-        const filename = filepath.split("\\").pop().split("/").pop();
-        resolve(filename);
-      });
-    })
   }
 
   async verifyNewReview(id_user, id_spot) {
@@ -37,16 +18,33 @@ class ReviewService {
       query.values,
     );
 
-    console.log(result);
-
     if (result.length > 0) {
       throw new InvariantError('Review gagal ditambahkan: verifyNewReview');
     }
   }
 
+  async getAvgReviewsFromSpot({ id }) {
+    const query = {
+      text: `SELECT 
+        SUM(rating)/COUNT(id) as avg_rating
+        FROM reviews
+        WHERE id_spot = ?
+      `,
+      values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    const { avg_rating } = result[0];
+    return avg_rating;
+  }
+
   async addReview({ id_user, id_spot, image, rating, review }) {
     await this.verifyNewReview(id_user, id_spot);
-    const filename = await this.base64ToImg(image);
+    const filename = await base64ToImg(image);
     const locationImg = `images/${filename}`;
 
     const query = {
@@ -68,7 +66,10 @@ class ReviewService {
 
   async getAllReviewByIdSpot({ id }) {
     const query = {
-      text: 'SELECT * FROM reviews WHERE `id_spot` = ?',
+      text: `SELECT users.name, users.status, reviews.image, reviews.rating, reviews.review
+      FROM reviews 
+      INNER JOIN users ON reviews.id_user = users.id 
+      WHERE id_spot = ?`,
       values: [id]
     }
 

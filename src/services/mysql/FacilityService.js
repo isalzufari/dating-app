@@ -7,7 +7,7 @@ class FacilityService {
 
   async getListFacilityByIdSpot({ id }) {
     const query = {
-      text: `SELECT id_facility, name 
+      text: `SELECT name 
       FROM list_facility 
       INNER JOIN facility 
       ON list_facility.id_facility = facility.id

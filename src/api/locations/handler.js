@@ -32,11 +32,15 @@ class LocationHandler {
   async getSpotByLocationHandler(request, h) {
     const { id } = request.params;
 
-    const spot = await this._service.getSpotByIdLocation({ id });
+    const spots = await this._service.getSpotByIdLocation({ id });
+    const mappedSpot = spots.map((spot) => ({
+      ...spot,
+      image: `http://localhost:9001/${spot.image}`,
+    }));
 
     const response = h.response({
       status: 'success',
-      data: spot
+      data: mappedSpot
     });
     response.code(201);
     return response;

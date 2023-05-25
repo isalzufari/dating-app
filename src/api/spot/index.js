@@ -8,11 +8,13 @@ module.exports = {
     spotService,
     reviewService,
     facilityService,
+    locationService
   }) => {
     const spotHandler = new SpotHandler(
       spotService,
       reviewService,
       facilityService,
+      locationService
     );
     server.route(routes(spotHandler));
   }

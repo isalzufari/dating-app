@@ -2,6 +2,9 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 
+// JWT
+const Jwt = require('@hapi/jwt');
+
 // Static Files
 const Path = require('path');
 const Inert = require('@hapi/inert');
@@ -45,7 +48,30 @@ const init = async () => {
     },
   });
 
-  await server.register(Inert);
+  await server.register([
+    {
+      plugin: Inert
+    },
+    {
+      plugin: Jwt
+    }
+  ]);
+
+  server.auth.strategy('dateapp_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      }
+    }),
+  });
 
   server.route({
     method: 'GET',
@@ -100,7 +126,8 @@ const init = async () => {
       options: {
         spotService,
         reviewService,
-        facilityService
+        facilityService,
+        locationService
       },
       routes: {
         prefix: '/spot'
@@ -109,7 +136,8 @@ const init = async () => {
     {
       plugin: review,
       options: {
-        service: reviewService,
+        reviewService,
+        spotService
       },
       routes: {
         prefix: '/reviews'
