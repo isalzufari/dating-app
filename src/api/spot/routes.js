@@ -5,6 +5,14 @@ const routes = (handler) => [
     handler: handler.getSpotsHandler
   },
   {
+    method: 'PUT',
+    path: '/',
+    handler: handler.updateSpotHandler,
+    options: {
+      auth: 'dateapp_jwt'
+    },
+  },
+  {
     method: 'POST',
     path: '/',
     handler: handler.postSpotHandler,
@@ -13,9 +21,23 @@ const routes = (handler) => [
     },
   },
   {
+    method: 'DELETE',
+    path: '/',
+    handler: handler.deleteSpotHandler,
+    options: {
+      auth: 'dateapp_jwt'
+    },
+  },
+  {
     method: 'GET',
     path: '/{slug}',
     handler: handler.getSpotBySlugHandler,
+    options: {
+      auth: {
+        strategy: 'dateapp_jwt',
+        mode: 'optional'
+      }
+    },
   },
   {
     method: 'GET',

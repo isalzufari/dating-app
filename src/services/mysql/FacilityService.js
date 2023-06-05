@@ -5,6 +5,16 @@ class FacilityService {
     this._pool = pool.promise();
   }
 
+  async getListFacility() {
+    const query = {
+      text: 'SELECT * FROM facility'
+    }
+
+    const [result, fields] = await this._pool.query(query.text);
+
+    return result;
+  }
+
   async getListFacilityByIdSpot({ id }) {
     const query = {
       text: `SELECT name 

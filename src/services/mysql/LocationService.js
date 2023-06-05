@@ -51,10 +51,11 @@ class LocationService {
 
   async getSpotByIdLocation({ id }) {
     const query = {
-      text: `SELECT spot.name, spot.image, spot.slug, spot.desc, spot.price, area.name as area
+      text: `SELECT spot.name, spot.image, spot.slug, spot.desc, spot.price, area.name as area, label_spot.name as label
       FROM spot 
       INNER JOIN locations ON spot.id_location = locations.id
-      INNER JOIN area ON locations.id_area = area.id 
+      INNER JOIN area ON locations.id_area = area.id
+      INNER JOIN label_spot ON label_spot.id = spot.id_label
       WHERE locations.id = ?`,
       values: [id]
     }

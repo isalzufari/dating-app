@@ -30,6 +30,9 @@ const LocationService = require('./services/mysql/LocationService');
 const facility = require('./api/facility');
 const FacilityService = require('./services/mysql/FacilityService');
 
+// User Logged In
+const app = require('./api/app');
+
 const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
@@ -73,15 +76,26 @@ const init = async () => {
     }),
   });
 
-  server.route({
-    method: 'GET',
-    path: '/images/{param*}',
-    handler: {
-      directory: {
-        path: Path.resolve('./public/images'),
+  server.route([
+    {
+      method: 'GET',
+      path: '/',
+      handler: () => {
+        return ({
+          status: 'success'
+        });
+      }
+    },
+    {
+      method: 'GET',
+      path: '/images/{param*}',
+      handler: {
+        directory: {
+          path: Path.resolve('./public/images'),
+        }
       }
     }
-  });
+  ]);
 
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
@@ -160,9 +174,20 @@ const init = async () => {
       routes: {
         prefix: '/facility'
       }
+    },
+    {
+      plugin: app,
+      options: {
+        spotService,
+        reviewService,
+        facilityService,
+        locationService
+      },
+      routes: {
+        prefix: '/app'
+      }
     }
-  ]
-  );
+  ]);
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

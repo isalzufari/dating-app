@@ -35,7 +35,7 @@ class LocationHandler {
     const spots = await this._service.getSpotByIdLocation({ id });
     const mappedSpot = spots.map((spot) => ({
       ...spot,
-      image: `http://localhost:9001/${spot.image}`,
+      image: `http://${request.headers.host}/${spot.image}`,
     }));
 
     const response = h.response({

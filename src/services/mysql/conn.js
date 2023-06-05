@@ -6,4 +6,11 @@ const pool = mysql.createPool({
   database: 'db_ngedate',
 });
 
+pool.getConnection(err => {
+  if (err) {
+    console.log(err);
+  }
+});
+
+
 module.exports = pool;

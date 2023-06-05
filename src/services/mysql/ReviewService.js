@@ -42,6 +42,39 @@ class ReviewService {
     return avg_rating;
   }
 
+  async getAllReviewByIdSpot({ id }) {
+    const query = {
+      text: `SELECT users.id as id_user, users.name, users.status, users.image as imgProfile, reviews.id as id_review, reviews.image, reviews.rating, reviews.review
+      FROM reviews 
+      INNER JOIN users ON reviews.id_user = users.id 
+      WHERE id_spot = ? ORDER BY status DESC`,
+      values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result;
+  }
+
+  async getReviewByIdUser({ id }) {
+    const query = {
+      text: `SELECT reviews.id, reviews.image as image_reviews, reviews.rating, review, spot.name, spot.slug FROM reviews 
+      INNER JOIN spot ON reviews.id_spot = spot.id
+      WHERE id_user = ?`,
+      values: [id],
+    };
+
+    const [result, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    return result;
+  }
+
   async addReview({ id_user, id_spot, image, rating, review }) {
     await this.verifyNewReview(id_user, id_spot);
     const filename = await base64ToImg(image);
@@ -64,13 +97,13 @@ class ReviewService {
     return result.insertId;
   }
 
-  async getAllReviewByIdSpot({ id }) {
+  async editReview({ id_user, id_review, image, rating, review }) {
+    const filename = await base64ToImg(image);
+    const locationImg = `images/${filename}`;
+
     const query = {
-      text: `SELECT users.name, users.status, reviews.image, reviews.rating, reviews.review
-      FROM reviews 
-      INNER JOIN users ON reviews.id_user = users.id 
-      WHERE id_spot = ?`,
-      values: [id]
+      text: 'UPDATE reviews SET image = ?, rating = ?, review = ? WHERE id = ? AND id_user = ?',
+      values: [locationImg, rating, review, id_review, id_user],
     }
 
     const [result, fields] = await this._pool.query(
@@ -78,7 +111,46 @@ class ReviewService {
       query.values,
     );
 
+    return result
+  }
+
+  async deleteReview({ id_review, id_user }) {
+    const query = {
+      text: 'DELETE FROM reviews WHERE id = ? AND id_user = ?',
+      values: [id_review, id_user],
+    }
+
+    const [results, fields] = await this._pool.query(
+      query.text,
+      query.values,
+    );
+
+    console.log(results);
+  }
+
+  async getReviewByUserLoggedInById({ id }) {
+    const query = {
+      text: `SELECT spot.id as id_spot, spot.name, spot.slug, reviews.image, reviews.id as id_review, reviews.rating, reviews.review FROM reviews
+      INNER JOIN spot ON reviews.id_spot = spot.id
+      WHERE reviews.id_user = ?
+      `,
+      values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(query.text, query.values);
+
     return result;
+  }
+
+  async getTotalReviewsFromSpotById({ id }) {
+    const query = {
+      text: 'SELECT COUNT(id) as total FROM reviews WHERE id_spot = ?',
+      values: [id]
+    }
+
+    const [result, fields] = await this._pool.query(query.text, query.values);
+
+    return result[0];
   }
 }
 
