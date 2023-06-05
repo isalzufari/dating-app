@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import * as bootstrap from 'bootstrap';
-import toBase64 from '../utils';
+import { urlToBase64, toBase64, ratingToStars } from '../utils';
 
 import { Rating } from 'react-simple-star-rating';
 import api from '../utils/api';
@@ -13,9 +13,13 @@ const DetailPlace = () => {
 
   const [srcImage, setSrcImage] = useState('');
   const [review, setReview] = useState('');
-  const [reviewImg, setReviewImg] = useState([]);
+  const [reviewImg, setReviewImg] = useState('');
   const [rating, setRating] = useState(0);
   const [spot, setSpot] = useState([]);
+
+  const [isLoad, setIsLoad] = useState(true);
+
+  const [reviewOnUpdate, setReviewOnUpdate] = useState([]);
 
   useEffect(() => {
     onSpotBySlug(slug);
@@ -24,7 +28,7 @@ const DetailPlace = () => {
   const onSpotBySlug = async (slug) => {
     const data = await api.getSpotBySlug({ slug });
     setSpot(data);
-    // console.log(data);
+    setIsLoad(false);
   }
 
   const showImageReview = (e) => {
@@ -34,24 +38,31 @@ const DetailPlace = () => {
 
   const handleFileEvent = async (e) => {
     if (!e.target.files[0]) return;
+    if (e.target.files[0].size > 1048576) {
+      alert("File is to big");
+    }
     const file = e.target.files[0]
     const base64Image = await toBase64(file);
     setReviewImg(base64Image);
   }
 
   const addReview = async ({ reviewImg, rating, review }) => {
+    console.log(reviewImg)
+    if (!reviewImg, !rating, !review) return;
+
     const { id: id_spot } = spot;
-    console.log(id_spot);
 
     const data = await api.addReview({ id_spot, image: reviewImg, rating, review })
 
-    const { status } = data;
+    const { status } = data;;
 
     if (status === 'success') {
       setReview('');
       setReviewImg('');
-      setRating('');
-      // new bootstrap.Modal('#showModalImageReview').hide();
+      setRating(0);
+      onSpotBySlug(slug);
+      // new bootstrap.Modal('#showModalAddReviewForm').hide();
+      alert(status);
     }
   }
 
@@ -60,12 +71,56 @@ const DetailPlace = () => {
     console.log(rating);
   }
 
-  const ratingToStars = (rating) => {
-    let stars = [];
-    for (let i = 0; i < rating; i++) {
-      stars.push(<i className="bi bi-star-fill" style={{ color: 'yellow' }}></i>)
+  const onUpdateModal = async (review) => {
+    const { rating, review: reviews, image } = review;
+    const base64Image = await urlToBase64(image);
+    setReviewOnUpdate(review);
+    setRating(rating);
+    setReview(reviews);
+    setReviewImg(base64Image);
+  }
+
+  const updateReview = async () => {
+    const { id: id_spot } = spot;
+    const { id_review } = reviewOnUpdate;
+    if (!id_review && !id_spot && !reviewImg && !rating && !review) return;
+    const data = await api.updateReview({ id_review, id_spot, image: reviewImg, rating, review });
+
+    console.log(data);
+
+    const { status, message } = data;
+
+    if (status === 'success') {
+      setReview('');
+      setReviewImg('');
+      setRating('');
+      onSpotBySlug(slug);
+      alert(message)
+      // document.getElementById('#inputFileUpload').target.value = '';
+      // new bootstrap.Modal('#showModalUpdateReviewForm').hide();
     }
-    return stars;
+  }
+
+  const onDelete = async ({ id_review }) => {
+    const { id: id_spot } = spot;
+    const data = await api.deleteReview({ id_review, id_spot });
+
+    const { status, message } = data;
+
+    if (status === 'success') {
+      // const deleteReviews = spot.reviews.filter((review) => review.id_review !== id_review);
+      // const spotUpdate = {
+      //   ...spot,
+      //   reviews: deleteReviews
+      // }
+      // setSpot(spotUpdate);
+      onSpotBySlug(slug);
+      alert(message)
+    }
+  }
+
+  if (isLoad) {
+    return <div className='text-center'>Loading...</div>
   }
 
   return (
@@ -93,7 +148,7 @@ const DetailPlace = () => {
         </div>
 
         <div className="col-12 col-md-6">
-          <img src='https://asset-a.grid.id/crop/0x0:0x0/700x0/photo/2022/08/05/279367887_472208658017720_640675-20220805114503.jpg' className="img-fluid rounded" alt="..." style={{ height: 380, width: 600, objectFit: 'cover' }} />
+          <img src={spot.image} className="img-fluid rounded" alt="..." style={{ height: 380, width: '-webkit-fill-available', objectFit: 'cover' }} />
         </div>
       </div>
 
@@ -107,25 +162,30 @@ const DetailPlace = () => {
             <i className="bi bi-star-fill" style={{ color: 'yellow' }}></i>
             <b> {spot.rating}</b>
           </h2>
-          <h5>disekitar</h5>
 
-          {spot?.arounds?.map((around) => (
-            <div className={`card mb-3 ${around.rating > 4 && 'shadow'}`}>
-              <div className="row g-0">
-                <div className="col-md-4">
-                  <img style={{ width: 150, objectFit: 'cover' }} src={around.image} className="img-fluid rounded-start" alt="..." />
-                </div>
-                <div className="col-md-8">
-                  <div className="card-body">
-                    <Link to={`/place/${around.slug}`} className="card-title">{around.name}</Link>
-                    <p className="card-text text-truncate">{around.desc}</p>
-                    <div>{ratingToStars(around.rating)}</div>
+          <h5>disekitar</h5>
+          {spot?.arounds?.length > 0 ?
+            <>
+              {spot?.arounds?.map((around, key) => (
+                <div key={key} className={`card mb-3 ${around.rating > 4 && 'shadow'}`}>
+                  <div className="row g-0">
+                    <div className="col-md-4">
+                      <img style={{ width: 150, height: 150, objectFit: 'cover' }} src={around.image} className="img-fluid rounded-start" alt="..." />
+                    </div>
+                    <div className="col-md-8">
+                      <div className="card-body">
+                        <Link to={`/place/${around.slug}`} className="card-title">{around.name}</Link>
+                        <p className="card-text text-truncate">{around.desc}</p>
+                        <div>{ratingToStars(around.rating)}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-
+              ))}
+            </>
+            :
+            <p>tidak ada mau <Link to='/app'>tambah?</Link></p>
+          }
         </div>
 
         <div className="col-12 col-md-8">
@@ -134,18 +194,63 @@ const DetailPlace = () => {
             <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#showModalAddReviewForm">Tulis</button>
           </div>
 
-          <div className="d-flex flex-column gap-2">
+          {spot?.reviews?.map((review, key) => (
+            review.isLoggedIn &&
+            <div key={key} className='card shadow mb-3'>
+              <div className="card-body">
+                <div className="d-flex justify-content-between">
+                  <div className="hstack gap-3">
+                    <img className='rounded-circle' style={{ height: 50, width: 50, objectFit: 'cover' }} src={review.imgProfile} alt={review.name} />
+                    <div className="vstack">
+                      <span>{review.name}</span>
+                      <div>
+                        {ratingToStars(review.rating)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="hstack">
+                    {review.status > 0 &&
+                      <span className="shadow-sm badge rounded-pill text-bg-light">
+                        <div className="hstack gap-3">
+                          <span>Verified</span>
+                          <i className="bi bi-patch-check-fill" style={{ color: 'red' }}></i>
+                        </div>
+                      </span>
+                    }
+                  </div>
+                </div>
+                <p className='mt-3'>
+                  {review.review}
+                </p>
+                <div className="d-flex flex-wrap flex-row align-items-stretch gap-1">
+                  <img onClick={(e) => showImageReview(e)} style={{ width: 150, height: 150, objectFit: 'cover', cursor: 'pointer' }} className='rounded' src={review.image} alt={spot.review} />
+                </div>
+              </div>
+              <div className="card-footer">
+                <div className='d-flex gap-2 justify-content-end'>
+                  <button onClick={() => onUpdateModal(review)} className='btn btn-warning' data-bs-toggle="modal" data-bs-target="#showModalUpdateReviewForm">
+                    <i className="bi bi-pencil-square"></i>
+                  </button>
+                  <button onClick={() => onDelete({ id_review: review.id_review })} className='btn btn-danger'>
+                    <i className="bi bi-trash3"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
 
+          <div className="d-flex flex-column gap-2">
             {!spot?.reviews?.length > 0 ?
               <>
                 <p className='text-center'>Belum ada review</p>
               </>
               : spot?.reviews?.map((review, key) => (
+                !review.isLoggedIn &&
                 <div key={key} className={`card ${review.status === 1 && 'shadow'}`}>
                   <div className="card-body">
                     <div className="d-flex justify-content-between">
                       <div className="hstack gap-3">
-                        <img src="https://lh3.googleusercontent.com/a-/ACB-R5RXtL16zjSdqZBXI1KPzv9Ury-8Jf4-n4s_zVN8iw=w36-h36-p-c0x00000000-rp-mo-ba3-br100" alt="" />
+                        <img className='rounded-circle' style={{ height: 50, width: 50, objectFit: 'cover' }} src={review.imgProfile} alt={review.name} />
                         <div className="vstack">
                           <span>{review.name}</span>
                           <div>
@@ -172,6 +277,7 @@ const DetailPlace = () => {
                     </div>
                   </div>
                 </div>
+
               ))}
 
             {/* <div className="card shadow">
@@ -262,6 +368,7 @@ const DetailPlace = () => {
               <div className="mb-3 text-center">
                 <Rating
                   onClick={handleRating}
+                  initialValue={rating}
                 />
               </div>
               <div className="mb-3">
@@ -271,10 +378,48 @@ const DetailPlace = () => {
                 <label htmlFor="formFileMultiple" className="form-label">Tambah foto</label>
                 <input onChange={(e) => handleFileEvent(e)} className="form-control" type="file" accept='image/png, image/jpeg' id="formFileMultiple" />
               </div>
+              <div className="mb-3">
+                {reviewImg &&
+                  <img style={{ height: 200, width: '-webkit-fill-available', objectFit: 'cover' }} className='rounded shadow' src={reviewImg} alt="" />
+                }
+              </div>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button onClick={() => addReview({ reviewImg, rating, review })} type="button" className="btn btn-primary">Tambah</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="modal fade" id="showModalUpdateReviewForm" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-body">
+              <div className="mb-3 text-center">
+                <Rating
+                  onClick={handleRating}
+                  initialValue={rating}
+                />
+              </div>
+              <div className="mb-3">
+                <textarea value={review} onChange={(e) => setReview(e.target.value)} className="form-control" id="exampleFormControlTextarea1" rows="3" placeholder='Ceritain pengalaman kamu...'></textarea>
+              </div>
+              <div className="mb-3">
+                <div className="row">
+                  <div className="col-4">
+                    <img style={{ height: 200, objectFit: 'cover' }} className='img-fluid rounded shadow' src={reviewImg} alt="" />
+                  </div>
+                  <div className="col-8">
+                    <label htmlFor="formFileMultiple" className="form-label">Ubah foto</label>
+                    <input onChange={(e) => handleFileEvent(e)} className="form-control" type="file" accept='image/png, image/jpeg' id="inputFileUpload" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button onClick={() => updateReview()} type="button" className="btn btn-primary">Ubah</button>
             </div>
           </div>
         </div>

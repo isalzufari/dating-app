@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navigation = ({ authUser, signOut }) => {
@@ -7,9 +7,12 @@ const Navigation = ({ authUser, signOut }) => {
   const slug = namePlace[1];
 
   return (
-    <nav className="navbar navbar-expand-lg bg-light border-bottom">
+    <nav className="navbar navbar-expand-lg bg-light shadow-sm">
       <div className="container p-2">
-        <Link className="navbar-brand" to='/'>NGEDATE.id</Link>
+        {/* <Link className="navbar-brand" to='/'>NGEDATE.id</Link> */}
+        <Link className="navbar-brand" to='/'>
+          <img src="./logo.jpg" style={{ width: 50, height: 50, objectFit: 'cover' }} className='img-fluid rounded-circle' alt='ngedate.id' />
+        </Link>
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -30,12 +33,19 @@ const Navigation = ({ authUser, signOut }) => {
               <div className="flex-shrink-0 dropdown">
                 <a href="#/" className="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                   <span>{authUser.name}</span>
+                  <img className='rounded-circle border border-2' style={{ height: 50, width: 50, objectFit: 'cover', marginLeft: 10 }} src={authUser.image} alt={authUser.name} />
+                  {authUser.status > 0 &&
+                    <span className="position-absolute top-0 translate-middle">
+                      <i className="bi bi-patch-check-fill" style={{ color: 'red' }}></i>
+                    </span>
+                  }
                 </a>
                 <ul className="dropdown-menu text-small shadow">
                   <li><Link className="dropdown-item" to="/app">App</Link></li>
-                  <li><a className="dropdown-item" href="#/">Settings</a></li>
-                  <li><a className="dropdown-item" href="#/">Profile</a></li>
                   <li><Link className="dropdown-item" to="/app/reviews">Reviews</Link></li>
+                  <li><Link className="dropdown-item" to="/app/places">Spot</Link></li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li><Link className="dropdown-item" to="/app/profile">Profile</Link></li>
                   <li><hr className="dropdown-divider" /></li>
                   <li><a onClick={signOut} className="dropdown-item" href="#/">Sign out</a></li>
                 </ul>

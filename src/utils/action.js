@@ -1,14 +1,15 @@
 import api from './api';
 
 const loginAction = async ({ email, password }) => {
-  const data = await api.login({ email, password });
-  const { accessToken, refreshToken } = data;
+  const token = await api.login({ email, password });
+  const { accessToken, refreshToken } = token;
 
   api.putAccessToken(accessToken);
   api.putRefreshToken(refreshToken);
 
   const authUser = await api.getOwnProfile();
-  return authUser;
+  const { data } = authUser;
+  return data;
 }
 
 const logoutAction = () => {

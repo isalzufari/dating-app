@@ -1,5 +1,5 @@
 const api = (() => {
-  const BASE_URL = 'http://localhost:9001';
+  const BASE_URL = 'http://192.168.43.34:9001';
 
   function putAccessToken(token) {
     localStorage.setItem('accessToken', token);
@@ -77,19 +77,40 @@ const api = (() => {
     return data;
   }
 
-  async function getOwnProfile() {
-    const response = await _fetchWithAuth(`${BASE_URL}/users`);
-    const responseJson = await response.json();
+  async function refreshToken() {
+    const response = await fetch(`${BASE_URL}/authentications`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refreshToken: `${getRefreshToken()}`,
+      }),
+    });
 
-    const { status, message } = responseJson;
+    const responseJson = await response.json();
+    const { status, message, data } = responseJson;
 
     if (status !== 'success') {
       throw new Error(message);
     }
+    putAccessToken(data.accessToken);
+  }
 
-    const { data } = responseJson;
+  async function getOwnProfile() {
+    const response = await _fetchWithAuth(`${BASE_URL}/users`);
+    const responseJson = await response.json();
 
-    return data;
+    const { status, message, error, data } = responseJson;
+
+    return { status, error, message, data };
+    // if (status !== 'success') {
+    //   throw new Error(message);
+    // }
+
+    // const { data } = responseJson;
+
+    // return data;
   }
 
   async function getRegion() {
@@ -163,7 +184,20 @@ const api = (() => {
   }
 
   async function getSpotBySlug({ slug }) {
-    const response = await fetch(`${BASE_URL}/spot/${slug}`);
+    let response;
+    if (getAccessToken()) {
+      response = await _fetchWithAuth(`${BASE_URL}/spot/${slug}`);
+      if (!response.ok) {
+        response = await fetch(`${BASE_URL}/spot/${slug}`);
+      }
+    } else {
+      response = await fetch(`${BASE_URL}/spot/${slug}`);
+    }
+
+
+    // const response = getAccessToken()
+    //   ? await _fetchWithAuth(`${BASE_URL}/spot/${slug}`)
+    //   : await fetch(`${BASE_URL}/spot/${slug}`);
 
     const responseJson = await response.json();
 
@@ -200,6 +234,229 @@ const api = (() => {
     return { status, data };
   }
 
+  async function updateReview({ id_review, id_spot, image, rating, review }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/reviews`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_review,
+        id_spot,
+        image,
+        rating,
+        review,
+      }),
+    });
+
+    const responseJson = await response.json();
+    const { status, message } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return { status, message };
+  }
+
+  async function deleteReview({ id_review, id_spot }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/reviews`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_review,
+        id_spot
+      }),
+    });
+
+    const responseJson = await response.json();
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return { status, message };
+  }
+
+  async function getReviewAndSpotLoggedIn() {
+    const response = await _fetchWithAuth(`${BASE_URL}/app`);
+    const responseJson = await response.json();
+
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  async function getReviewsLoggedIn() {
+    const response = await _fetchWithAuth(`${BASE_URL}/app/reviews`);
+    const responseJson = await response.json();
+
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  async function getSpotsLoggedIn() {
+    const response = await _fetchWithAuth(`${BASE_URL}/app/spots`);
+    const responseJson = await response.json();
+
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  async function deleteSpot({ id_spot }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/spot`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_spot
+      }),
+    });
+
+    const responseJson = await response.json();
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return { status, data };
+  }
+
+  async function getFacilities() {
+    const response = await fetch(`${BASE_URL}/app/add/facility`);
+
+    const responseJson = await response.json();
+
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  async function getLabelSpot() {
+    const response = await fetch(`${BASE_URL}/app/add/label`);
+
+    const responseJson = await response.json();
+
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+  async function addSpot({ name, image, desc, price, facility, id_location, id_label }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/spot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        image,
+        desc,
+        price,
+        facility,
+        id_location,
+        id_label
+      }),
+    });
+
+    const responseJson = await response.json();
+    const { status, message, data } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return { status, data };
+  }
+
+  async function editSpot({ id_spot, name, image, desc, price, facility, id_location, id_label }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/spot`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id_spot,
+        name,
+        image,
+        desc,
+        price,
+        facility,
+        id_location,
+        id_label
+      }),
+    });
+
+    const responseJson = await response.json();
+    const { status, message } = responseJson;
+
+    if (status !== 'success') {
+      throw new Error(message);
+    }
+
+    return { status, message };
+  }
+
+  async function updateProfile({ name, image, old_password, new_password }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/users`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        image,
+        old_password,
+        new_password
+      }),
+    });
+
+    const responseJson = await response.json();
+    return responseJson;
+  }
+
+  async function softDeleteProfile({ old_password }) {
+    const response = await _fetchWithAuth(`${BASE_URL}/users`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        old_password
+      }),
+    });
+
+    const responseJson = await response.json();
+
+    return responseJson;
+  }
 
   return {
     putAccessToken,
@@ -217,6 +474,19 @@ const api = (() => {
     getSpots,
     getSpotBySlug,
     addReview,
+    updateReview,
+    deleteReview,
+    getReviewAndSpotLoggedIn,
+    getReviewsLoggedIn,
+    getSpotsLoggedIn,
+    getFacilities,
+    getLabelSpot,
+    addSpot,
+    editSpot,
+    deleteSpot,
+    refreshToken,
+    updateProfile,
+    softDeleteProfile
   }
 })();
 

@@ -1,8 +1,21 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import * as bootstrap from 'bootstrap'
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../../utils/api';
+import { ratingToStars } from '../../utils';
 
-const Main = () => {
+const Main = ({ authUser }) => {
+  const [spots, setSpots] = useState([]);
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const getReviewAndSpot = async () => {
+      const data = await api.getReviewAndSpotLoggedIn()
+      setSpots(data.spots);
+      setReviews(data.reviews);
+    }
+    getReviewAndSpot();
+    console.log(authUser);
+  }, []);
 
   return (
     <div className="row">
@@ -14,24 +27,26 @@ const Main = () => {
               <Link to="/app/reviews" className='btn btn-primary text-light'>semua</Link>
             </div>
 
-            <Link to='/place/dekhad-gandaria' className='text-decoration-none text-dark'>
-              <div className="card">
-                <div className="card-body">
-                  <div className="hstack gap-3">
-                    <img style={{ width: 100, height: 100, objectFit: 'cover' }} className='rounded' src="https://asset-a.grid.id/crop/0x0:0x0/700x0/photo/2022/08/05/292005621_1360417934369270_67628-20220805114512.jpg" alt="" />
-                    <div>
-                      <h5 class="card-title">Dekhad Gandaria</h5>
-                      <p class="card-text text-truncate">Ini komentar</p>
-                      <div>
-                        <i className="bi bi-star-fill" style={{ color: 'yellow' }}></i>
-                        <i className="bi bi-star-fill" style={{ color: 'yellow' }}></i>
-                        <i className="bi bi-star-half" style={{ color: 'yellow' }}></i>
+            {reviews?.slice(0, 5).map((review, key) => (
+              <Link key={key} to={`/place/${review.slug}`} className='text-decoration-none text-dark'>
+                <div className="card mb-2">
+                  <div className="card-body">
+                    <div class="row g-0">
+                      <div class="col-4">
+                        <img style={{ width: 150, height: 150, objectFit: 'cover' }} className='rounded-start' src={review.image} alt={review.name} />
+                      </div>
+                      <div class="col-8">
+                        <h5 class="card-title">{review.name}</h5>
+                        <p class="card-text text-truncate">{review.review}</p>
+                        <div>
+                          {ratingToStars(review.rating)}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            ))}
 
           </div>
         </div>
@@ -44,24 +59,29 @@ const Main = () => {
               <Link to={`/app/places`} className='btn btn-primary text-light'>semua</Link>
             </div>
 
-            <Link to='/place/dekhad-gandaria' className='text-decoration-none text-dark'>
-              <div className="card">
-                <div className="card-body">
-                  <div className="hstack gap-3">
-                    <img style={{ width: 100, height: 100, objectFit: 'cover' }} className='rounded' src="https://asset-a.grid.id/crop/0x0:0x0/700x0/photo/2022/08/05/292005621_1360417934369270_67628-20220805114512.jpg" alt="" />
-                    <div>
-                      <h5 class="card-title">Dekhad Gandaria</h5>
-                      <p class="card-text text-truncate">"As a hub for people and communities"</p>
+            {authUser?.status > 0 ? spots?.slice(0, 5).map((spot, key) => (
+              <Link key={key} to={`/place/${spot.slug}`} className='text-decoration-none text-dark'>
+
+                <div class="card mb-2">
+                  <div class="row g-0">
+                    <div class="col-4">
+                      <img src={spot.image} style={{ width: 150, height: 150, objectFit: 'cover' }} class="img-fluid rounded-start" alt={spot.name} />
+                    </div>
+                    <div class="col-8">
+                      <div class="card-body">
+                        <h5 class="card-title">{spot.name}</h5>
+                        <p class="card-text text-truncate">{spot.desc}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            )) : <p>Anda belum bisa menambahkan tempat! <a href='#/'>verifikasi?</a></p>}
 
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 

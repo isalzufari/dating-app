@@ -1,16 +1,19 @@
 import React from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import useInput from '../../hooks/useInput';
 import { loginAction } from '../../utils/action.js';
 
 const Login = ({ setauthUser }) => {
   const [email, onEmailChange] = useInput('');
   const [password, onPasswordChange] = useInput('');
+  const navigate = useNavigate();
 
   const onLogin = async ({ email, password }) => {
     const authUser = await loginAction({ email, password });
     setauthUser(authUser);
-    // return <Navigate to="/" replace />
+    // return window.location.href = '/';
+    // return <Navigate to={'/'} />
+    navigate('/place');
   };
 
   return (

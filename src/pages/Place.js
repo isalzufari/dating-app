@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../utils/api';
+import { toRupiah } from '../utils';
 
 const Place = () => {
   const [regions, setRegions] = useState([]);
   const [areas, setAreas] = useState([]);
   const [spots, setSpots] = useState([]);
   let [searchParams, setSearchParams] = useSearchParams();
+  const [idRegionByParams, setIdRegion] = useState();
 
   useEffect(() => {
     const idRegion = searchParams.get('regions');
+    setIdRegion(Number(idRegion));
     onArea(idRegion);
     onSpotsByRegion(idRegion);
     onSpots();
     onRegion();
-  }, []);
+  }, [idRegionByParams]);
 
   const onRegion = async () => {
     const data = await api.getRegion();
@@ -59,6 +62,7 @@ const Place = () => {
 
   return (
     <>
+      {/* Search Bar */}
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div class="row g-3">
@@ -67,7 +71,12 @@ const Place = () => {
               <select onChange={((e) => onArea(e.target.value))} class="form-select" id="autoSizingSelect">
                 <option selected>Daerah</option>
                 {regions.map((region, key) => (
-                  <option key={key} value={region.id_region}>{region.name}</option>
+                  <option
+                    key={key}
+                    selected={region.id_region === idRegionByParams}
+                    value={region.id_region}>
+                    {region.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -98,21 +107,24 @@ const Place = () => {
       </div >
 
       {/* <h4 className='mb-3'>Tempat Populer</h4> */}
-      <div className="row" >
 
-        {!spots?.length > 0 ?
-          <>
-            <p className='text-center h5 mt-5'>Spot belum ada</p>
-            <p className='text-center'> mau tambah spot? <Link to="/app/login">login</Link></p>
-          </>
-          : spots.map((spot, key) => (
-            <div key={key} className='col-12 col-sm-6 col-md-4 col-lg-3 mb-3'>
+
+      {!spots?.length > 0 ?
+        <>
+          <p className='text-center h5 mt-5'>Spot belum ada</p>
+          <p className='text-center'> mau tambah spot? <Link to="/app/login">login</Link></p>
+        </>
+        :
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-5" >
+          {spots.map((spot, key) => (
+            <div key={key} className='col mb-3'>
               <Link to={`/place/${spot.slug}`} className='text-decoration-none text-dark'>
                 <div className="card position-relative">
-                  <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
-                    Trendsetter
-                    <span class="visually-hidden">unread messages</span>
-                  </span>
+                  {spot.label !== "" &&
+                    <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
+                      {spot.label}
+                    </span>
+                  }
                   <img src={spot.image} class="card-img" alt={spot.name} style={{ objectFit: 'cover', height: 180 }} />
                   <div className="card-body">
                     <small className='float-end'>
@@ -121,17 +133,19 @@ const Place = () => {
                     </small>
                     <h5 className="h6 card-title text-truncate"><b>{spot.name}</b></h5>
                     <p className="card-text text-truncate">{spot.desc}</p>
-                    <p className='float-end'>
+                    <span className='float-end'>
                       <small>dari </small>
-                      <span className='badge text-bg-danger'>IDR {spot.price}</span>
-                    </p>
+                      <span className='badge text-bg-danger'>{toRupiah(spot.price)}</span>
+                    </span>
                   </div>
                 </div>
               </Link>
             </div>
           ))}
+        </div >
+      }
 
-        {/* <div className='col-12 col-sm-6 col-md-4 col-lg-3'>
+      {/* <div className='col-12 col-sm-6 col-md-4 col-lg-3'>
           <Link to='/place/dekhad-gandaria' className='text-decoration-none text-dark'>
             <div className="card position-relative">
               <span style={{ left: 85 + '%' }} class="position-absolute top-0 translate-middle badge rounded-pill bg-danger">
@@ -179,7 +193,7 @@ const Place = () => {
           </Link>
         </div> */}
 
-      </div >
+
 
       {/* <h4 className='my-3'>Tempat Populer di Kota</h4>
       <div className="row">

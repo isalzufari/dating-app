@@ -1,9 +1,10 @@
 import React from 'react'
-import { Link, redirect } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import useInput from '../../hooks/useInput'
 import { registerAction } from '../../utils/action';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [name, onNameChange] = useInput('');
   const [email, onEmailChange] = useInput('');
   const [password, onPasswordChange] = useInput('');
@@ -12,8 +13,7 @@ const Register = () => {
     const registerUser = await registerAction({ name, email, password });
     const { data, status } = registerUser;
     if (status === "success") {
-      alert(status);
-      return redirect('app/login'); // Bug
+      return navigate('/app/login'); // Bug
     }
   }
 
