@@ -35,7 +35,6 @@ const ProtectedRoute = ({ authUser, children }) => {
   if (!authUser) {
     return <Navigate to="/app/login" replace />
   }
-  console.log(authUser)
   return children ? children : <Outlet />;
 }
 
@@ -52,7 +51,6 @@ function App() {
   useEffect(() => {
     const asyncPreloadProcess = async () => {
       const authUser = await api.getOwnProfile();
-      console.log(authUser);
       if (authUser.status !== 'success') {
         if (authUser.error === "Unauthorized" && authUser.message === "Token maximum age exceeded") {
           if (window.confirm('Sesi kamu udah habis. Perpanjang sesi?')) {
@@ -71,7 +69,6 @@ function App() {
   }, []);
 
   const onSignOut = () => {
-    console.log('logout');
     setauthUser(null);
     logoutAction();
   }

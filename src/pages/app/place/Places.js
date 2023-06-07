@@ -26,7 +26,6 @@ const Places = () => {
       const regions = await api.getRegion();
       const facilities = await api.getFacilities();
       const labels = await api.getLabelSpot();
-      console.log(spots);
       setRegions(regions);
       setSpots(spots);
       setFacilities(facilities)
@@ -78,13 +77,10 @@ const Places = () => {
       image: await urlToBase64(spot.image),
       facility: [],
     });
-    console.log(addSpot);
   }
 
   const updateSpot = async () => {
-    console.log(addSpot);
     const { id: id_spot, name, image, desc, price, facility, id_location, id_label } = addSpot;
-    console.log({ id_spot, name, image, desc, price, facility, id_location, id_label });
 
     const data = await api.editSpot({ id_spot, name, image, desc, price, facility, id_location, id_label });
 

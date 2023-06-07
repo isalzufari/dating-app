@@ -47,7 +47,6 @@ const Place = () => {
     };
     const data = await api.getSpotsByIdArea({ id });
     setSpots(data);
-    console.log(data);
   }
 
   const onSpotsByRegion = async (id) => {
@@ -57,7 +56,6 @@ const Place = () => {
     };
     const data = await api.getSpotsByIdRegion({ id });
     setSpots(data);
-    console.log(data);
   }
 
   return (

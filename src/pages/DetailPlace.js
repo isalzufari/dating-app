@@ -47,7 +47,6 @@ const DetailPlace = () => {
   }
 
   const addReview = async ({ reviewImg, rating, review }) => {
-    console.log(reviewImg)
     if (!reviewImg, !rating, !review) return;
 
     const { id: id_spot } = spot;
@@ -68,7 +67,6 @@ const DetailPlace = () => {
 
   const handleRating = (rate) => {
     setRating(rate);
-    console.log(rating);
   }
 
   const onUpdateModal = async (review) => {
@@ -85,8 +83,6 @@ const DetailPlace = () => {
     const { id_review } = reviewOnUpdate;
     if (!id_review && !id_spot && !reviewImg && !rating && !review) return;
     const data = await api.updateReview({ id_review, id_spot, image: reviewImg, rating, review });
-
-    console.log(data);
 
     const { status, message } = data;
 

@@ -14,7 +14,6 @@ const Main = ({ authUser }) => {
       setReviews(data.reviews);
     }
     getReviewAndSpot();
-    console.log(authUser);
   }, []);
 
   return (

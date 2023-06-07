@@ -18,7 +18,6 @@ const Reviews = () => {
   useEffect(() => {
     const getReviews = async () => {
       const data = await api.getReviewsLoggedIn()
-      console.log(data);
       setReviews(data);
     }
     getReviews();
@@ -38,13 +37,9 @@ const Reviews = () => {
 
   const handleRating = (rate) => {
     setRating(rate);
-    console.log(rating);
   }
 
   const onDelete = async ({ id_review, id_spot }) => {
-    console.log(id_review, id_spot);
-
-
     const data = await api.deleteReview({ id_review, id_spot });
 
     const { status } = data;
@@ -68,8 +63,6 @@ const Reviews = () => {
     const { id_review, id_spot } = reviewOnUpdate;
     if (!id_review && !id_spot && !reviewImg && !rating && !review) return;
     const data = await api.updateReview({ id_review, id_spot, image: reviewImg, rating, review });
-
-    console.log(data);
 
     const { status } = data;
 
