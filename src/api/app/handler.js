@@ -78,7 +78,6 @@ class AppHandler {
 
   async getFacilityHandler(request, h) {
     const facility = await this._facilityService.getListFacility();
-    console.log(facility);
 
     const response = h.response({
       status: 'success',

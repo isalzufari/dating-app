@@ -13,8 +13,6 @@ class ReviewHandler {
     const { id } = request.auth.credentials;
     const reviews = await this._reviewService.getReviewByIdUser({ id });
 
-    // console.log(reviews);
-
     const response = h.response({
       status: 'success',
       data: reviews,
@@ -31,8 +29,6 @@ class ReviewHandler {
     const avgRating = await this._reviewService.getAvgReviewsFromSpot({ id: id_spot });
     await this._spotService.updateRatingByIdSpot({ avgRating, id: id_spot });
 
-    console.log(avgRating);
-
     const response = h.response({
       status: 'success',
       message: 'Review berhasil ditambahkan',
@@ -46,13 +42,9 @@ class ReviewHandler {
     const { id: id_user } = request.auth.credentials;
     const { id_spot, id_review, image, rating, review } = request.payload;
 
-    console.log(id_spot);
-
     await this._reviewService.editReview({ id_user, id_review, image, rating, review });
     const avgRating = await this._reviewService.getAvgReviewsFromSpot({ id: id_spot });
     await this._spotService.updateRatingByIdSpot({ avgRating, id: id_spot });
-
-    console.log(avgRating);
 
     const response = h.response({
       status: 'success',
@@ -69,8 +61,6 @@ class ReviewHandler {
     await this._reviewService.deleteReview({ id_review, id_user });
     const avgRating = await this._reviewService.getAvgReviewsFromSpot({ id: id_spot });
     await this._spotService.updateRatingByIdSpot({ avgRating, id: id_spot });
-
-    console.log(avgRating);
 
     const response = h.response({
       status: 'success',

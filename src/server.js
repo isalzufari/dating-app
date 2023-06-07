@@ -100,8 +100,6 @@ const init = async () => {
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
 
-    // console.log(response);
-
     if (response instanceof ClientError) {
       const newResponse = h.response({
         status: 'fail',

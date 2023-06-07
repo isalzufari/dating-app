@@ -133,8 +133,6 @@ class SpotService {
       query.values,
     );
 
-    console.log(result);
-
     // Updating many to many
     await this.deleteFacility(id_spot);
     for await (const id_facility of facility) {
@@ -219,7 +217,6 @@ class SpotService {
       query.values,
     );
 
-    console.log(result);
     return result;
   }
 

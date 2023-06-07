@@ -7,7 +7,6 @@ const TokenManager = {
   verifyRefreshToken: (refreshToken) => {
     try {
       const artifacts = Jwt.token.decode(refreshToken);
-      // console.log(artifacts)
       Jwt.token.verifySignature(artifacts, process.env.REFRESH_TOKEN_KEY);
       const { payload } = artifacts.decoded;
       return payload;
@@ -16,8 +15,5 @@ const TokenManager = {
     }
   },
 }
-
-// const refreshToken = TokenManager.generateRefreshToken(1234);
-// console.log(refreshToken);
 
 module.exports = TokenManager;

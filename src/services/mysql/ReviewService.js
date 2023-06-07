@@ -124,8 +124,6 @@ class ReviewService {
       query.text,
       query.values,
     );
-
-    console.log(results);
   }
 
   async getReviewByUserLoggedInById({ id }) {
