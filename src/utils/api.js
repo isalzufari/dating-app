@@ -1,5 +1,4 @@
 const api = (() => {
-  // const BASE_URL = 'http://localhost:8080';
   const BASE_URL = 'http://34.101.219.162/api';
 
   function putAccessToken(token) {
@@ -273,7 +272,7 @@ const api = (() => {
     });
 
     const responseJson = await response.json();
-    const { status, message, data } = responseJson;
+    const { status, message } = responseJson;
 
     if (status !== 'success') {
       throw new Error(message);
