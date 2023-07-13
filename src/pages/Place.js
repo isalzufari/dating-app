@@ -89,7 +89,7 @@ const Place = () => {
               </select>
             </div>
 
-            <div class="col-sm">
+            {/* <div class="col-sm">
               <label class="visually-hidden" for="autoSizingSelect">Preference</label>
               <select class="form-select" id="autoSizingSelect">
                 <option selected>Pilih</option>
@@ -99,7 +99,7 @@ const Place = () => {
                 <option value="3">Taman</option>
                 <option value="3">Perpus</option>
               </select>
-            </div>
+            </div> */}
           </div>
         </div>
       </div >
